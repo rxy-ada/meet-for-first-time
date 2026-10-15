@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moonlight Quotes</title>
+  <style>
+    :root{
+      --bg1:#11131b;
+      --bg2:#1d2130;
+      --panel:rgba(18,21,30,.7);
+      --panel-strong:rgba(24,28,40,.86);
+      --line:rgba(255,255,255,.12);
+      --pink:#ff7ab6;
+      --pink-2:#ffb6d7;
+      --gold:#f5d68d;
+      --mint:#8fe7d6;
+      --lavender:#c9b8ff;
+      --text:#f7f4f2;
+      --muted:#c8c5d4;
+      --shadow:0 18px 50px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:
+      radial-gradient(circle at 20% 20%, rgba(255,132,170,.15), transparent 18%),
+      radial-gradient(circle at 80% 10%, rgba(245,214,141,.12), transparent 20%),
+      linear-gradient(135deg, var(--bg1), var(--bg2));
+      color:var(--text);}
+
+    body{
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:18px;
+    }
+
+    .app{
+      width:min(1280px,100%);
+      min-height:calc(100vh - 36px);
+      background:rgba(17,18,26,.56);
+      border:1px solid var(--line);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:20px 24px;
+      background:rgba(255,255,255,.03);
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:30;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:700; letter-spacing:1px;
+    }
+    .brand-mark{
+      width:40px;height:40px;border-radius:50%;
+      background:linear-gradient(140deg, rgba(255,144,179,.95), rgba(245,214,141,.8));
+      display:grid;place-items:center; font-size:19px; box-shadow:0 12px 24px rgba(255,127,186,.28);
+    }
+
+    .mode-toggle{
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:999px; padding:6px;
+    }
+
+    .mode-btn{
+      border:none; background:transparent; color:var(--muted); padding:8px 14px; border-radius:999px; cursor:pointer; font-weight:600;
+    }
+    .mode-btn.active{
+      background:linear-gradient(135deg, rgba(255,142,179,.9), rgba(245,214,141,.8));
+      color:#1d1422; box-shadow:0 8px 18px rgba(255,138,185,.28);
+    }
+
+    .main{
+      display:grid; grid-template-columns: 260px 1fr 290px; min-height:calc(100vh - 120px);
+    }
+
+    .sidebar, .rightbar{
+      padding:22px 18px;
+    }
+
+    .sidebar{
+      border-right:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+    }
+
+    .rightbar{
+      border-left:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+    }
+
+    .section-title{
+      font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin:16px 0 12px;
+    }
+
+    .search-box{
+      display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:16px;
+      background:rgba(255,255,255,.05); border:1px solid var(--line);
+    }
+    .search-box input{
+      flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:14px;
+    }
+    .search-box input::placeholder{color:rgba(255,255,255,.45)}
+    .icon{
+      width:14px; height:14px; display:inline-block; opacity:.8;
+      position:relative;
+    }
+    .icon.search::before{
+      content:""; position:absolute; width:8px;height:8px;border:2px solid #fff;border-radius:50%; left:0; top:0;
+    }
+    .icon.search::after{
+      content:""; position:absolute; width:6px;height:2px;background:#fff; transform:rotate(45deg); right:0; bottom:2px; border-radius:2px;
+    }
+
+    .category-list{
+      display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;
+    }
+
+    .chip{
+      border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.035); color:var(--text);
+      padding:8px 12px; border-radius:999px; cursor:pointer; font-size:12px; transition:.2s ease;
+    }
+    .chip.active{
+      background:linear-gradient(135deg, rgba(255,140,178,.14), rgba(143,231,214,.16));
+      border-color:rgba(255,180,213,.7);
+      color:#fff;
+    }
+
+    .mini-panel{
+      margin-top:18px; padding:14px; border:1px solid var(--line); border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    }
+
+    .login-box{
+      display:none; gap:10px; flex-direction:column;
+    }
+    .login-box.active{ display:flex; }
+    .login-box input{
+      width:100%; border:1px solid var(--line); background:rgba(255,255,255,.04); border-radius:12px;
+      color:var(--text); padding:10px 12px; outline:none;
+    }
+    .primary-btn, .secondary-btn{
+      border:none; border-radius:12px; padding:10px 12px; cursor:pointer; font-weight:700; transition:.2s ease;
+    }
+    .primary-btn{
+      background:linear-gradient(135deg, var(--pink), var(--gold)); color:#1a1320;
+      box-shadow:0 14px 26px rgba(255,127,186,.2);
+    }
+    .secondary-btn{
+      background:rgba(255,255,255,.04); color:var(--text); border:1px solid var(--line);
+    }
+
+    .content{
+      padding:22px 20px 18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.0));
+    }
+
+    .hero{
+      position:relative; padding:24px 22px 18px; border-radius:24px;
+      background:
+        linear-gradient(135deg, rgba(255,181,210,.12), rgba(245,214,141,.12)),
+        rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      overflow:hidden;
+    }
+
+    .hero::before{
+      content:""; position:absolute; inset:-30% -10% auto auto; width:230px;height:230px;
+      background:radial-gradient(circle, rgba(255,150,190,.28), transparent 60%);
+      filter:blur(14px);
+    }
+
+    .hero-grid{
+      display:grid; grid-template-columns:1.3fr .7fr; gap:16px; align-items:center;
+    }
+
+    .hero h1{
+      margin:0; font-size:clamp(28px,3.2vw,52px); line-height:1.05; letter-spacing:1px;
+    }
+    .hero p{
+      margin:10px 0 0; color:var(--muted); font-size:15px; line-height:1.7;
+    }
+
+    .hero-cta{
+      display:flex; justify-content:flex-end; align-items:center; gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .player{
+      display:flex; align-items:center; gap:12px; justify-content:flex-end; margin-top:14px;
+    }
+    .speaker{
+      width:42px;height:42px;border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.08); border:1px solid var(--line); cursor:pointer;
+      font-size:18px; transition:.2s ease;
+    }
+    .speaker:hover{ transform:translateY(-1px) scale(1.02);}
+    .music-state{
+      color:var(--muted); font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+    }
+
+    .stats{
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:22px;
+    }
+
+    .stat{
+      background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:18px; padding:14px 16px;
+    }
+    .stat strong{ display:block; font-size:28px; }
+    .stat span{ color:var(--muted); font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+    .stat:nth-child(1) strong{ color:var(--pink-2);}
+    .stat:nth-child(2) strong{ color:var(--gold);}
+    .stat:nth-child(3) strong{ color:var(--mint);}
+    
+    .results-head{
+      display:flex; align-items:center; justify-content:space-between; margin:22px 0 12px;
+    }
+    .results-head h2{ margin:0; font-size:18px; }
+    .badge{
+      background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:999px; padding:7px 10px; color:var(--muted); font-size:12px;
+    }
+
+    .card-grid{
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px;
+    }
+
+    .quote-card{
+      position:relative; background:linear-gradient(180deg, rgba(255,255,255,.047), rgba(255,255,255,.02));
+      border:1px solid var(--line); border-radius:22px; padding:18px 18px 16px; min-height:200px;
+      box-shadow:0 8px 16px rgba(0,0,0,.08); display:flex; flex-direction:column; gap:12px;
+    }
+    .quote-card::before{
+      content:"“"; position:absolute; left:18px; top:16px; font-size:48px; color:rgba(255,164,198,.25); font-family:Georgia, serif;
+    }
+    .quote-card .quote-text{
+      margin-top:8px; padding-left:24px; font-size:18px; line-height:1.6; word-break:break-word;
+    }
+    .meta{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin-top:auto;
+    }
+    .tag{
+      display:inline-flex; font-size:11px; color:var(--pink-2); background:rgba(255,140,184,.08); border:1px solid rgba(255,160,205,.25);
+      padding:6px 8px; border-radius:999px;
+    }
+    .quote-source{
+      color:var(--muted); font-size:12px; line-height:1.7;
+    }
+    .quote-author{ font-weight:700; color:var(--gold);}
+    .card-actions{
+      display:flex; justify-content:space-between; align-items:center; margin-top:6px;
+    }
+    .action-group{
+      display:flex; gap:8px;
+    }
+    .small-btn{
+      background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:8px 10px; font-size:12px; cursor:pointer;
+    }
+    .small-btn.active{
+      background:rgba(255,130,180,.12); border-color:rgba(255,153,196,.5); color:var(--pink-2);
+    }
+    .collect-list, .friend-list{
+      display:flex; flex-direction:column; gap:10px;
+      margin-top:14px;
+    }
+    .mini-item{
+      background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:14px; padding:10px 12px;
+      line-height:1.5;
+    }
+    .mini-item small{ color:var(--muted); display:block; }
+    .friend-picker{
+      display:flex; gap:8px; margin-top:12px;
+    }
+    .friend-picker input{
+      flex:1; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--text); outline:none; padding:10px 12px;
+    }
+
+    .empty{
+      border:1px dashed var(--line); border-radius:18px; padding:20px; text-align:center; color:var(--muted); background:rgba(255,255,255,.02);
+    }
+
+    @media (max-width: 980px){
+      .main{ display:block; }
+      .sidebar, .rightbar{ border:none; }
+      .rightbar{ border-top:1px solid var(--line); }
+      .hero-grid{ grid-template-columns:1fr; }
+      .hero-cta{ justify-content:flex-start; }
+      .player{ justify-content:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">✦</div>
+        <div>Moonlight Quotes</div>
+      </div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="guest">游客模式</button>
+        <button class="mode-btn" data-mode="wechat">微信登录</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <aside class="sidebar">
+        <div class="section-title">搜索</div>
+        <div class="search-box">
+          <span class="icon search"></span>
+          <input id="searchInput" placeholder="输入情感关键词，如：表白、失落、成长" />
+        </div>
+
+        <div class="section-title">分类</div>
+        <div id="categoryList" class="category-list"></div>
+
+        <div class="mini-panel">
+          <div class="section-title" style="margin-top:0;">微信登录</div>
+          <div id="loginBox" class="login-box">
+            <input id="wechatName" placeholder="微信昵称 / 微信号" />
+            <input id="wechatId" placeholder="微信号（示例：abc123）" />
+            <button class="primary-btn" id="loginBtn">进入微信收藏</button>
+          </div>
+          <div id="guestTip" style="color:var(--muted);font-size:13px;line-height:1.7;">游客模式可直接搜索、分类和收藏，不需要登录。</div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="hero">
+          <div class="hero-grid">
+            <div>
+              <h1>把每一句心事，变成一场电影里的浪漫</h1>
+              <p>从《你的名字》《言叶之庭》《La La Land》《霸王别姬》《肖申克的救赎》《小王子》到《百年孤独》《麦琪的礼物》《了不起的盖茨比》等作品中，寻找适合收藏、转发、引用的温柔台词。</p>
+            </div>
+            <div class="hero-cta">
+              <div class="player">
+                <button class="speaker" id="musicToggle" aria-label="随机切换轻音乐">🔊</button>
+                <div class="music-state" id="musicState">轻音乐：已开启</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <strong id="statTotal">0</strong>
+              <span>作品句子</span>
+            </div>
+            <div class="stat">
+              <strong id="statCategories">0</strong>
+              <span>情感分类</span>
+            </div>
+            <div class="stat">
+              <strong id="statFavorites">0</strong>
+              <span>已收藏</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="results-head">
+          <h2>热搜句子</h2>
+          <div class="badge" id="resultSummary">共 0 条</div>
+        </div>
+        <div id="quoteGrid" class="card-grid"></div>
+      </main>
+
+      <aside class="rightbar">
+        <div class="section-title">我的收藏</div>
+        <div id="favoriteList" class="collect-list"></div>
+
+        <div class="section-title" style="margin-top:22px;">好友收藏</div>
+        <div class="friend-picker">
+          <input id="friendInput" placeholder="输入好友微信号，如：13800138000" />
+          <button class="secondary-btn" id="friendBtn">查看</button>
+        </div>
+        <div id="friendList" class="friend-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const quotes = [
+      { id: 1, text: "今晚月色真美。", source: "《你的名字。》", author: "新海诚", tags: ["表白","爱情","浪漫","月色"], mood: "浪漫", scene: "告白" },
+      { id: 2, text: "我一直在等一个人，直到后来我知道，原来我最想见的，是你。", source: "《怦然心动》", author: "文森特·卡本特", tags: ["表白","爱情","等待","温柔"], mood: "浪漫", scene: "告白" },
+      { id: 3, text: "我想把余生都给你。", source: "《小王子》", author: "安托万·德·圣-埃克苏佩里", tags: ["爱情","承诺","余生","温暖"], mood: "浪漫", scene: "告白" },
+      { id: 4, text: "Life is like a box of chocolates. You never know what you're gonna get.", source: "《阿甘正传》", author: "Forrest Gump", tags: ["人生","成长","随机","温暖"], mood: "治愈", scene: "人生" },
+      { id: 5, text: "All we have to decide is what to do with the time that is given us.", source: "《指环王》", author: "甘道夫", tags: ["成长","时间","勇气","选择"], mood: "坚定", scene: "人生" },
+      { id: 6, text: "The best way to predict the future is to create it.", source: "《企业家精神》", author: "彼得·德鲁克", tags: ["未来","行动","梦想","勇气"], mood: "坚定", scene: "追梦" },
+      { id: 7, text: "And when you smile, the whole world stops and stares for a while.", source: "《La La Land》", author: "Sebastian & Mia", tags: ["微笑","爱情","电影","治愈"], mood: "浪漫", scene: "告白" },
+      { id: 8, text: "Maybe we can be extraordinary together.", source: "《La La Land》", author: "Mia", tags: ["梦想","爱情","未来","浪漫"], mood: "浪漫", scene: "告白" },
+      { id: 9, text: "A dream is a wish your heart makes.", source: "《灰姑娘》", author: "Cinderella", tags: ["梦想","希望","童话","勇气"], mood: "治愈", scene: "追梦" },
+      { id: 10, text: "The world is full of magic things, patiently waiting for our senses to grow sharper.", source: "《爱丽丝漫游奇境》", author: "路易斯·卡罗", tags: ["童年","惊奇","成长","发现"], mood: "治愈", scene: "成长" },
+      { id: 11, text: "我们每个人的生命里，都有值得被认真珍惜的东西。", source: "《海上钢琴师》", author: "托马斯·科勒", tags: ["生命","珍惜","温暖","人生"], mood: "温暖", scene: "人生" },
+      { id: 12, text: "Many of us crucify ourselves between two thieves: regret for the past and fear of the future.", source: "《福尔摩斯》", author: "西尔维亚·普拉斯", tags: ["过去","未来","释怀","成长"], mood: "成长", scene: "自我" },
+      { id: 13, text: "I’m not afraid of storms, for I’m learning how to sail my ship.", source: "《海明威》", author: "Louisa May Alcott", tags: ["勇气","成长","面对困难","人生"], mood: "坚定", scene: "勇气" },
+      { id: 14, text: "Being deeply loved by someone gives you strength, while loving someone deeply gives you courage.", source: "《论爱的艺术》", author: "罗曼·罗兰", tags: ["爱情","勇气","温暖","成长"], mood: "浪漫", scene: "爱情" },
+      { id: 15, text: "你不是一无所有，你还有我。", source: "《我想吃掉你的胰脏》", author: "青田", tags: ["陪伴","情感","温暖","关怀"], mood: "温暖", scene: "陪伴" },
+      { id: 16, text: "No matter how your heart is grieving, if you keep on believing, the dream that you wish will come true.", source: "《灰姑娘》", author: "Cinderella", tags: ["希望","梦想","坚持","治愈"], mood: "治愈", scene: "追梦" },
+      { id: 17, text: "You have to be brave enough to be happy.", source: "《大鱼海棠》", author: "梁旋", tags: ["勇气","幸福","成长","现实"], mood: "坚定", scene: "追梦" },
+      { id: 18, text: "现实总有些残酷，但我们还想爱。", source: "《春夏秋冬又一春》", author: "金基德", tags: ["现实","爱情","坚强","感受"], mood: "成长", scene: "爱情" },
+      { id: 19, text: "When you choose to be yourself, life is more colorful.", source: "《美丽人生》", author: "Roberto Benigni", tags: ["真实","成长","自由","幸福"], mood: "治愈", scene: "成长" },
+      { id: 20, text: "A person who never made a mistake never tried anything new.", source: "《爱因斯坦》", author: "Albert Einstein", tags: ["试错","成长","勇气","人生"], mood: "成长", scene: "追梦" },
+      { id: 21, text: "Some infinities are bigger than other infinities.", source: "《The Fault in Our Stars》", author: "约翰·格林", tags: ["爱","成长","命运","哲思"], mood: "伤感", scene: "成长" },
+      { id: 22, text: "I love you. You are my favorite person in the whole world.", source: "《海边的曼彻斯特》", author: "李·科恩", tags: ["告白","爱情","喜欢","温柔"], mood: "浪漫", scene: "告白" },
+      { id: 23, text: "I know now that when you are in love, you don't need words. Just a glance.", source: "《恋爱中的拉丁》", author: "托马斯·曼", tags: ["爱情","默契","温柔","表达"], mood: "浪漫", scene: "爱情" },
+      { id: 24, text: "Even in the dark, there is light inside us.", source: "《你的名字。》", author: "新海诚", tags: ["希望","光","温暖","勇气"], mood: "治愈", scene: "成长" },
+      { id: 25, text: "We are all a little broken, but we can still be beautiful.", source: "《美丽心灵》", author: "珍妮弗·康纳利", tags: ["脆弱","治愈","自我","温暖"], mood: "治愈", scene: "自我" },
+      { id: 26, text: "To love at all is to be vulnerable.", source: "《基督山伯爵》", author: "大仲马", tags: ["爱情","脆弱","勇气","表达"], mood: "浪漫", scene: "爱情" },
+      { id: 27, text: "I see the moon and I think of you.", source: "《言叶之庭》", author: "新海诚", tags: ["思念","月亮","爱情","温暖"], mood: "浪漫", scene: "思念" },
+      { id: 28, text: "I have never loved someone. I’ve just been in love with the idea of you.", source: "《爱你就像爱生命》", author: "王小波", tags: ["爱情","失恋","成长","思念"], mood: "伤感", scene: "失恋" },
+      { id: 29, text: "The most important thing is not to stop questioning.", source: "《相对论》", author: "爱因斯坦", tags: ["好奇","成长","哲思","学习"], mood: "成长", scene: "成长" },
+      { id: 30, text: "If you don't remember anything else, remember that I love you.", source: "《李先生的大理》", author: "李先生", tags: ["爱情","深情","告白","记忆"], mood: "浪漫", scene: "告白" },
+      { id: 31, text: "I want to be the one who understands your silence.", source: "《岛上书店》", author: "加·泽·戴维斯", tags: ["理解","陪伴","爱情","温暖"], mood: "浪漫", scene: "陪伴" },
+      { id: 32, text: "I don't think I'll ever have the words to say what you mean to me.", source: "《傲慢与偏见》", author: "简·奥斯汀", tags: ["爱情","感动","表达","温柔"], mood: "浪漫", scene: "爱情" },
+      { id: 33, text: "In the end, it's not the years in your life that count. It's the life in your years.", source: "《艾伯特·爱因斯坦》", author: "爱因斯坦", tags: ["人生","价值","生活","成长"], mood: "成长", scene: "人生" },
+      { id: 34, text: "Let us be brave enough to make a future together.", source: "《雾都孤儿》", author: "查尔斯·狄更斯", tags: ["未来","相伴","勇气","爱情"], mood: "浪漫", scene: "未来" },
+      { id: 35, text: "我想和你一起，看明天的太阳。", source: "《那些年，我们一起追的女孩》", author: "九把刀", tags: ["陪伴","未来","爱情","温暖"], mood: "浪漫", scene: "未来" },
+      { id: 36, text: "原来，青春就是一场一场告别。", source: "《致我们终将逝去的青春》", author: "辛夷坞", tags: ["青春","告别","成长","回忆"], mood: "伤感", scene: "青春" },
+      { id: 37, text: "别怕，你并不孤单。", source: "《小王子》", author: "安托万·德·圣-埃克苏佩里", tags: ["治愈","陪伴","温暖","勇气"], mood: "治愈", scene: "陪伴" },
+      { id: 38, text: "你可以哭，但不能放弃自己。", source: "《少年的你》", author: "周冬雨", tags: ["勇气","成长","温暖","自我"], mood: "坚定", scene: "成长" },
+      { id: 39, text: "不要羡慕别人，你也会成为别人羡慕的那个人。", source: "《人生重开模拟器》", author: "随笔", tags: ["自我","成长","梦想","励志"], mood: "坚定", scene: "成长" },
+      { id: 40, text: "每一个人，都该被温柔相待。", source: "《请以你的名字呼唤我》", author: "安德烈·阿科斯塔", tags: ["温柔","人性","治愈","陪伴"], mood: "温暖", scene: "陪伴" },
+      { id: 41, text: "We are all stories in the end.", source: "《Doctor Who》", author: "The Doctor", tags: ["人生","故事","成长","命运"], mood: "哲思", scene: "人生" },
+      { id: 42, text: "You don't have to be fearless. You just have to be brave enough to begin.", source: "《星际穿越》", author: "Cooper", tags: ["勇气","开始","成长","未来"], mood: "坚定", scene: "勇气" },
+      { id: 43, text: "No one can ever go back and start a new beginning, but anyone can start today and make a new ending.", source: "《美好生活》", author: "Maria", tags: ["重启","成长","人生","希望"], mood: "治愈", scene: "未来" },
+      { id: 44, text: "我从来没有想过我们会走到这一步。", source: "《秒速五厘米》", author: "新海诚", tags: ["爱情","失去","思念","成长"], mood: "伤感", scene: "失恋" },
+      { id: 45, text: "True love is not about being inseparable; it's about being separated and still believing.", source: "《一见钟情》", author: "萨维尔", tags: ["爱情","相信","信任","成长"], mood: "浪漫", scene: "爱情" },
+      { id: 46, text: "Love is not a thing we can keep, but a thing we can share.", source: "《恋爱的犀牛》", author: "莫言", tags: ["爱情","分享","温暖","生命"], mood: "浪漫", scene: "爱情" },
+      { id: 47, text: "I had forgotten how lovely it is to be in the company of someone who makes you smile.", source: "《瓦尔登湖》", author: "亨利·戴维·梭罗", tags: ["相遇","温暖","幸福","陪伴"], mood: "温暖", scene: "陪伴" },
+      { id: 48, text: "Maybe that's what life is all about: finding someone who knows how to love your strange heart.", source: "《偷书贼》", author: "马克·扎克伯格", tags: ["爱情","理解","温暖","成长"], mood: "浪漫", scene: "爱情" },
+      { id: 49, text: "Even the smallest light can guide you home.", source: "《星际穿越》", author: "Murph", tags: ["希望","温暖","成长","勇气"], mood: "治愈", scene: "未来" },
+      { id: 50, text: "I am not lost. I am finding my way.", source: "《由宇宙构成》", author: "Emma", tags: ["成长","自我","勇气","寻找"], mood: "坚定", scene: "成长" },
+      { id: 51, text: "When the world feels heavy, we need a place to put our sadness down.", source: "《小王子》", author: "安托万·德·圣-埃克苏佩里", tags: ["失落","治愈","温暖","心事"], mood: "治愈", scene: "失落" },
+      { id: 52, text: "The hardest part is not to love. It is to leave when love is no longer enough.", source: "《被嫌弃的松子的一生》", author: "中村佳", tags: ["失恋","离别","成长","现实"], mood: "伤感", scene: "离别" },
+      { id: 53, text: "Time is a strange thing. It passes, but some feelings don't.", source: "《怦然心动》", author: "文森特·卡本特", tags: ["时间","感情","成长","回忆"], mood: "伤感", scene: "思念" },
+      { id: 54, text: "Maybe the most romantic thing is not saying forever, but saying today, I choose you.", source: "《情书》", author: "岩井俊二", tags: ["爱情","现在","告白","浪漫"], mood: "浪漫", scene: "告白" },
+      { id: 55, text: "我想把你放进我最深的心里，像放一颗小小的星星。", source: "《人间失格》", author: "太宰治", tags: ["爱情","思念","温柔","文学"], mood: "浪漫", scene: "思念" },
+      { id: 56, text: "Let your heart be your compass.", source: "《一生所爱》", author: "电影名句", tags: ["勇气","爱情","成长","未来"], mood: "坚定", scene: "勇气" },
+      { id: 57, text: "人生本来就没有答案，重要的是我们如何去爱和活着。", source: "《活着》", author: "余华", tags: ["人生","爱","生活","温暖"], mood: "温暖", scene: "人生" },
+      { id: 58, text: "The past is a place of reference, not a place of residence.", source: "《教父》", author: "Michael Corleone", tags: ["成长","过去","释怀","人生"], mood: "成长", scene: "自我" },
+      { id: 59, text: "Good things happen to those who wait, but the best things happen to those who choose.", source: "《恋爱中的拉丁》", author: "文艺片", tags: ["等待","选择","爱情","勇气"], mood: "坚定", scene: "爱情" },
+      { id: 60, text: "I don't want to be someone else. I want to be more fully myself.", source: "《无边界》", author: "电影名句", tags: ["成长","自我","真实","勇气"], mood: "成长", scene: "自我" }
+    ];
+
+    const friends = {
+      "13800138000": { name: "Luna", list: [1, 7, 23, 35, 49] },
+      "15912345678": { name: "Aster", list: [4, 16, 25, 36, 50] },
+      "18500001111": { name: "Milo", list: [8, 12, 17, 40, 54] },
+      "17788889999": { name: "Cici", list: [9, 20, 27, 39, 55] }
+    };
+
+    const state = {
+      query: "",
+      category: "全部",
+      mode: "guest",
+      favorites: [],
+      user: null
+    };
+
+    const categoryList = document.getElementById('categoryList');
+    const quoteGrid = document.getElementById('quoteGrid');
+    const searchInput = document.getElementById('searchInput');
+    const favoriteList = document.getElementById('favoriteList');
+    const friendList = document.getElementById('friendList');
+    const friendInput = document.getElementById('friendInput');
+    const loginBox = document.getElementById('loginBox');
+    const guestTip = document.getElementById('guestTip');
+    const resultSummary = document.getElementById('resultSummary');
+    const statTotal = document.getElementById('statTotal');
+    const statCategories = document.getElementById('statCategories');
+    const statFavorites = document.getElementById('statFavorites');
+
+    const allCategories = ["全部","告白","爱情","成长","勇气","治愈","离别","追梦","人生","陪伴","未来","失恋","青春","自我"];
+    const categoryMap = {
+      "全部": () => true,
+      "告白": q => q.scene === "告白" || q.tags.includes("告白"),
+      "爱情": q => q.scene === "爱情" || q.tags.includes("爱情"),
+      "成长": q => q.scene === "成长" || q.tags.includes("成长"),
+      "勇气": q => q.scene === "勇气" || q.tags.includes("勇气"),
+      "治愈": q => q.scene === "失落" || q.tags.includes("治愈") || q.mood === "治愈",
+      "离别": q => q.scene === "离别" || q.tags.includes("离别"),
+      "追梦": q => q.scene === "追梦" || q.tags.includes("梦想"),
+      "人生": q => q.scene === "人生" || q.tags.includes("人生"),
+      "陪伴": q => q.scene === "陪伴" || q.tags.includes("陪伴"),
+      "未来": q => q.scene === "未来" || q.tags.includes("未来"),
+      "失恋": q => q.scene === "失恋" || q.tags.includes("失恋"),
+      "青春": q => q.scene === "青春" || q.tags.includes("青春"),
+      "自我": q => q.scene === "自我" || q.tags.includes("自我")
+    };
+
+    function initCategories() {
+      categoryList.innerHTML = "";
+      allCategories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'chip' + (state.category === cat ? ' active' : '');
+        btn.textContent = cat;
+        btn.onclick = () => {
+          state.category = cat;
+          renderCategories();
+          renderQuotes();
+        };
+        categoryList.appendChild(btn);
+      });
+    }
+
+    function renderCategories() {
+      [...categoryList.children].forEach((btn, idx) => {
+        btn.classList.toggle('active', allCategories[idx] === state.category);
+      });
+    }
+
+    function getFilteredQuotes() {
+      const q = state.query.trim().toLowerCase();
+      return quotes.filter(item => {
+        const categoryOK = categoryMap[state.category](item);
+        const searchOK = !q || [item.text, item.source, item.author, item.tags.join(" "), item.mood, item.scene].join(" ").toLowerCase().includes(q);
+        return categoryOK && searchOK;
+      });
+    }
+
+    function renderQuotes() {
+      const filtered = getFilteredQuotes();
+      resultSummary.textContent = `共 ${filtered.length} 条`;
+      statTotal.textContent = quotes.length;
+      statCategories.textContent = allCategories.length - 1;
+      statFavorites.textContent = state.favorites.length;
+
+      if (filtered.length === 0) {
+        quoteGrid.innerHTML = '<div class="empty">没有匹配的句子，换个情感关键词试试吧。</div>';
+        return;
+      }
+
+      quoteGrid.innerHTML = filtered.map(item => {
+        const isFav = state.favorites.includes(item.id);
+        const canShare = state.mode === 'wechat' || state.user;
+        return `
+          <article class="quote-card">
+            <div class="quote-text">${escapeHtml(item.text)}</div>
+            <div class="quote-source">
+              <span class="quote-author">${escapeHtml(item.author)}</span>
+              <div>${escapeHtml(item.source)}</div>
+            </div>
+            <div class="meta">
+              ${item.tags.slice(0,4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}
+            </div>
+            <div class="card-actions">
+              <div class="action-group">
+                <button class="small-btn ${isFav ? 'active' : ''}" data-action="favorite" data-id="${item.id}">${isFav ? '已收藏' : '收藏'}</button>
+                <button class="small-btn" data-action="share" data-id="${item.id}" ${canShare ? '' : 'disabled'}>分享</button>
+              </div>
+              <span class="badge">${escapeHtml(item.scene)}</span>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      quoteGrid.querySelectorAll('[data-action]').forEach(btn => {
+        btn.onclick = () => {
+          const id = Number(btn.dataset.id);
+          const action = btn.dataset.action;
+          if (action === 'favorite') toggleFavorite(id);
+          if (action === 'share') shareQuoteToUser(id);
+        };
+      });
+    }
+
+    function toggleFavorite(id) {
+      if (state.favorites.includes(id)) {
+        state.favorites = state.favorites.filter(v => v !== id);
+      } else {
+        state.favorites.push(id);
+      }
+      renderQuotes();
+      renderFavorites();
+    }
+
+    function renderFavorites() {
+      const favItems = quotes.filter(q => state.favorites.includes(q.id));
+      if (!favItems.length) {
+        favoriteList.innerHTML = '<div class="mini-item">还没有收藏句子，点击“收藏”即可加入你的清单。</div>';
+        return;
+      }
+      favoriteList.innerHTML = favItems.map(item => `
+        <div class="mini-item">
+          <div style="font-size:15px;line-height:1.6;">“${escapeHtml(item.text)}”</div>
+          <small>${escapeHtml(item.author)} · ${escapeHtml(item.source)}</small>
+        </div>
+      `).join("");
+    }
+
+    function shareQuoteToUser(id) {
+      const target = window.prompt("输入好友微信号，示例：13800138000", "13800138000");
+      if (!target) return;
+
+      const friend = friends[target];
+      if (!friend) {
+        alert("该好友不存在于演示数据中，可试试：13800138000 / 15912345678 / 18500001111 / 17788889999");
+        return;
+      }
+
+      const item = quotes.find(q => q.id === id);
+      if (!item) return;
+
+      if (!friend.list.includes(id)) {
+        friend.list.push(id);
+      }
+
+      renderFriendCollection(target);
+      alert(`已将“${item.text}”分享给 ${friend.name}（${target}）`);
+    }
+
+    function renderFriendCollection(phone) {
+      const info = friends[phone];
+      if (!info) {
+        friendList.innerHTML = '<div class=\"mini-item\">暂无好友数据，请输入正确微信号</div>';
+        return;
+      }
+      const items = info.list.map(id => quotes.find(q => q.id === id)).filter(Boolean);
+      friendList.innerHTML = items.map(item => `
+        <div class="mini-item">
+          <strong>${escapeHtml(info.name)}</strong>
+          <div style="margin-top:8px; font-size:15px; line-height:1.6;">“${escapeHtml(item.text)}”</div>
+          <small>${escapeHtml(item.author)} · ${escapeHtml(item.source)}</small>
+        </div>
+      `).join("");
+    }
+
+    searchInput.addEventListener('input', e => {
+      state.query = e.target.value;
+      renderQuotes();
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const name = document.getElementById('wechatName').value.trim() || '微信用户';
+      const id = document.getElementById('wechatId').value.trim();
+      if (!id) {
+        alert('请输入微信号后再登录');
+        return;
+      }
+      state.user = { name, id };
+      state.mode = 'wechat';
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === 'wechat'));
+      loginBox.classList.add('active');
+      guestTip.textContent = `已登录：${name}（${id}）`;
+      renderQuotes();
+    });
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.mode = btn.dataset.mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+        if (state.mode === 'guest') {
+          state.user = null;
+          guestTip.textContent = '游客模式可直接搜索、分类和收藏，不需要登录。';
+          loginBox.classList.remove('active');
+        } else {
+          loginBox.classList.add('active');
+          guestTip.textContent = state.user ? `已登录：${state.user.name}（${state.user.id}）` : '请使用微信号登录查看好友收藏';
+        }
+        renderQuotes();
+      });
+    });
+
+    document.getElementById('friendBtn').addEventListener('click', () => {
+      renderFriendCollection(friendInput.value.trim());
+    });
+
+    document.getElementById('friendInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') renderFriendCollection(friendInput.value.trim());
+    });
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ---------- WebAudio ambient light music ----------
+    let audioCtx = null;
+    let gainNode = null;
+    let activeTimer = null;
+    let musicOn = false;
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtx();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 0.06;
+        gainNode.connect(audioCtx.destination);
+      }
+    }
+
+    function playTone(freq, duration, type='sine', volume=0.22) {
+      if (!audioCtx || !gainNode) return;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.value = volume;
+      osc.connect(g);
+      g.connect(gainNode);
+      const start = audioCtx.currentTime;
+      osc.start(start);
+      osc.stop(start + duration);
+      g.gain.setValueAtTime(volume, start);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    }
+
+    function startAmbientLoop() {
+      ensureAudio();
+      const notes = [261.63, 329.63, 392.0, 440.0, 392.0, 329.63];
+      let i = 0;
+      clearInterval(activeTimer);
+      activeTimer = setInterval(() => {
+        const root = notes[i % notes.length];
+        playTone(root, 2.4, 'sine', 0.12);
+        playTone(root / 2, 2.8, 'triangle', 0.08);
+        playTone(root * 1.5, 2.1, 'sine', 0.06);
+        i++;
+      }, 3200);
+      musicOn = true;
+      document.getElementById('musicState').textContent = '轻音乐：已开启';
+    }
+
+    function stopAmbientLoop() {
+      clearInterval(activeTimer);
+      musicOn = false;
+      document.getElementById('musicState').textContent = '轻音乐：已静音';
+    }
+
+    document.getElementById('musicToggle').addEventListener('click', () => {
+      if (!audioCtx) {
+        ensureAudio();
+      }
+      if (musicOn) {
+        stopAmbientLoop();
+      } else {
+        startAmbientLoop();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    });
+
+    initCategories();
+    renderQuotes();
+    renderFavorites();
+    renderFriendCollection('13800138000');
+    startAmbientLoop();
+  </script>
+</body>
+</html>
